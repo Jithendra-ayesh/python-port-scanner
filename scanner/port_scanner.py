@@ -72,59 +72,66 @@ def main():
     print(" Python Port Scanner ")
     print("=" * 40)
 
-    host = input("\nEnter Host: ")
-    try:
-        start_port = int(input("Enter Start Port: "))
-        end_port = int(input("Enter End Port: "))
+    while True:
+        host = input("\nEnter Host: ")
+        try:
+            start_port = int(input("Enter Start Port: "))
+            end_port = int(input("Enter End Port: "))
 
-    except ValueError:
-        print("Invalid port number.")
-        return
-    
-    if start_port < 1 or end_port > 65535:
-        print("Ports must be between 1 and 65535.")
-        return
+        except ValueError:
+            print("Invalid port number.")
+            return
+        
+        if start_port < 1 or end_port > 65535:
+            print("Ports must be between 1 and 65535.")
+            return
 
-    if start_port > end_port:
-        print("Start port must be less than end port.")
-        return
+        if start_port > end_port:
+            print("Start port must be less than end port.")
+            return
 
-    ip = resolve_host(host)
+        ip = resolve_host(host)
 
-    if not ip:
-        print("Unable to resolve host.")
-        return
+        if not ip:
+            print("Unable to resolve host.")
+            return
 
-    print(f"\nResolved IP: {ip}")
-    print("\nScanning ports...\n")
+        print(f"\nResolved IP: {ip}")
+        print("\nScanning ports...\n")
 
-    start_time = time.time()
+        start_time = time.time()
 
-    open_ports = []
+        open_ports = []
 
-    print(f"{'PORT':<10}{'STATUS':<10}{'SERVICE'}")
-    print("-" * 30)
+        print(f"{'PORT':<10}{'STATUS':<10}{'SERVICE'}")
+        print("-" * 30)
 
-    with ThreadPoolExecutor(max_workers=100) as executor:
-        results = executor.map(lambda port: process_port(ip, port), range(start_port, end_port + 1)
-        )
+        with ThreadPoolExecutor(max_workers=100) as executor:
+            results = executor.map(lambda port: process_port(ip, port), range(start_port, end_port + 1)
+            )
 
-    for result in results:
-        if result:
-            port, service = result
-            open_ports.append((port, service))
+        for result in results:
+            if result:
+                port, service = result
+                open_ports.append((port, service))
 
-            print(f" {port:<10}{'OPEN':<10}{service}")
+                print(f" {port:<10}{'OPEN':<10}{service}")
 
-    end_time = time.time()
-    scan_time = end_time - start_time
-    print("\nScan Complete")
-    print(f"Open Ports Found: {len(open_ports)}")
-    print(f"Scan Time: {scan_time:.2f} seconds")
+        end_time = time.time()
+        scan_time = end_time - start_time
+        print("\nScan Complete")
+        print(f"Open Ports Found: {len(open_ports)}")
+        print(f"Scan Time: {scan_time:.2f} seconds")
 
-    log_results(host, ip, start_port, end_port, open_ports, scan_time)
+        log_results(host, ip, start_port, end_port, open_ports, scan_time)
 
-    print("\nResults saved to logs/scan_results.txt")
+        print("\nResults saved to logs/scan_results.txt")
+
+        choice = input("\nScan another host? (y/n): ").strip().lower()
+
+        if choice != "y":
+            print("\nExiting Port Scanner...")
+            break
 
 if __name__ == "__main__":
     main()
