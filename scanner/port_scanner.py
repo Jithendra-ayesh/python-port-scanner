@@ -80,21 +80,21 @@ def main():
 
         except ValueError:
             print("Invalid port number.")
-            return
+            continue
         
         if start_port < 1 or end_port > 65535:
             print("Ports must be between 1 and 65535.")
-            return
+            continue
 
         if start_port > end_port:
             print("Start port must be less than end port.")
-            return
+            continue
 
         ip = resolve_host(host)
 
         if not ip:
             print("Unable to resolve host.")
-            return
+            continue
 
         print(f"\nResolved IP: {ip}")
         print("\nScanning ports...\n")
