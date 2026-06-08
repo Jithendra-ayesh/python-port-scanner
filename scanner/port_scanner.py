@@ -17,7 +17,11 @@ def scan_port(ip, port):
     return result == 0
 
 def detect_service(port):
-    pass
+    try:
+        return socket.getservbyport(port)
+
+    except OSError:
+        return "unknown"
 
 def log_results():
     pass
@@ -39,10 +43,15 @@ def main():
     print("\nScanning ports...\n")
 
     open_ports = []
+
+    print(f"{'PORT':<10}{'STATUS':<10}{'SERVICE'}")
+    print("-" * 30)
+
     for port in range(1, 1025):
         if scan_port(ip, port):
             open_ports.append(port)
-            print(f"Port {port} OPEN")
+            service = detect_service(port)
+            print(f" {port:<5}{'OPEN':<12} {service}")
 
     print("\nScan Complete")
     print(f"Open Ports Found: {len(open_ports)}")
