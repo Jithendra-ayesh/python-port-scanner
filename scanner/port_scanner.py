@@ -34,7 +34,7 @@ def process_port(ip, port):
 
     return None
 
-def log_results(host, ip, open_ports, scan_time):
+def log_results(host, ip, start_port, end_port, open_ports, scan_time):
 
     timestamp = datetime.now().strftime(
         "%Y-%m-%d %H:%M:%S"
@@ -53,6 +53,7 @@ def log_results(host, ip, open_ports, scan_time):
         file.write(f"Scan Date : {timestamp}\n")
         file.write(f"Host      : {host}\n")
         file.write(f"IP        : {ip}\n")
+        file.write(f"Port Range: {start_port}-{end_port}\n")
         file.write("=" * 50 + "\n\n")
 
         file.write(f"{'PORT':<10}{'SERVICE'}\n")
@@ -72,6 +73,21 @@ def main():
     print("=" * 40)
 
     host = input("\nEnter Host: ")
+    try:
+        start_port = int(input("Enter Start Port: "))
+        end_port = int(input("Enter End Port: "))
+
+    except ValueError:
+        print("Invalid port number.")
+        return
+    
+    if start_port < 1 or end_port > 65535:
+        print("Ports must be between 1 and 65535.")
+        return
+
+    if start_port > end_port:
+        print("Start port must be less than end port.")
+        return
 
     ip = resolve_host(host)
 
@@ -90,7 +106,7 @@ def main():
     print("-" * 30)
 
     with ThreadPoolExecutor(max_workers=100) as executor:
-        results = executor.map(lambda port: process_port(ip, port), range(1, 1025)
+        results = executor.map(lambda port: process_port(ip, port), range(start_port, end_port + 1)
         )
 
     for result in results:
@@ -106,7 +122,7 @@ def main():
     print(f"Open Ports Found: {len(open_ports)}")
     print(f"Scan Time: {scan_time:.2f} seconds")
 
-    log_results(host, ip, open_ports, scan_time)
+    log_results(host, ip, start_port, end_port, open_ports, scan_time)
 
     print("\nResults saved to logs/scan_results.txt")
 
