@@ -1,4 +1,6 @@
 import socket
+from concurrent.futures import ThreadPoolExecutor
+import time
 
 def resolve_host(host):
     try:
@@ -22,6 +24,13 @@ def detect_service(port):
 
     except OSError:
         return "unknown"
+    
+def process_port(ip, port):
+    if scan_port(ip, port):
+        service = detect_service(port)
+        return (port, service)
+
+    return None
 
 def log_results():
     pass
@@ -42,19 +51,28 @@ def main():
     print(f"\nResolved IP: {ip}")
     print("\nScanning ports...\n")
 
+    start_time = time.time()
+
     open_ports = []
 
     print(f"{'PORT':<10}{'STATUS':<10}{'SERVICE'}")
     print("-" * 30)
 
-    for port in range(1, 1025):
-        if scan_port(ip, port):
-            open_ports.append(port)
-            service = detect_service(port)
-            print(f" {port:<5}{'OPEN':<12} {service}")
+    with ThreadPoolExecutor(max_workers=100) as executor:
+        results = executor.map(lambda port: process_port(ip, port), range(1, 1025)
+        )
 
+    for result in results:
+        if result:
+            port, service = result
+            open_ports.append(port)
+
+            print(f" {port:<10}{'OPEN':<10}{service}")
+
+    end_time = time.time()
     print("\nScan Complete")
     print(f"Open Ports Found: {len(open_ports)}")
+    print(f"Scan Time: {end_time - start_time:.2f} seconds")
 
 if __name__ == "__main__":
     main()
